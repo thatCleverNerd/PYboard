@@ -2,7 +2,7 @@
 
 import customtkinter
 from tkinter import *
-
+from functools import partial
 
 lightgrey = "#d9d9d9"
 offwhite = "#e3e3e3"
@@ -51,28 +51,36 @@ label.grid(row=1, column=1, sticky="n", columnspan="2", pady="150", padx=(0, 340
 
 ################## RETURN KEY EVENT FUCTION ####################################
 
-new_note = ""
 
-# Clears text after pressing enter
+
+
+
 
 def return_key_event(event):
+    # Clears text when this function is called
+
+    note_var = BooleanVar()
     user_input = entry.get()
-    
-    # Deletes old input
+
+    for i in range(1):
+        new_note = customtkinter.CTkCheckBox(
+            whiteboard,
+            text=user_input,
+            font=("Comic Sans", 20),
+            variable=note_var)
+        new_note.configure(command=partial(on_checkbox_change, note_var, new_note))
+        new_note.pack(side="top", padx=(40, 0), pady=(18, 12), fill="x")
+
     entry.delete(0, 'end')
 
-    global new_note
-    global state
 
-    # Add a new note
-    new_note = customtkinter.CTkCheckBox(
-    whiteboard, 
-    text=user_input, 
-    onvalue="on", 
-    offvalue="off", 
-    font=("Comic Sans", 20))
-    
-    new_note.pack(side="top", padx=(40, 0), pady=(18, 12), fill="x")
+
+def on_checkbox_change(note_var, new_note):
+    if note_var.get() == 1:
+        new_note.configure(text_color="red")
+    elif note_var.get() == 0:
+        new_note.configure(text_color="black")  # Reset to default color
+
 
 ########################################
 

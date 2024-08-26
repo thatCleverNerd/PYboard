@@ -1,22 +1,46 @@
 #!/home/killian/PYTHON/venv/bin/python3
 
-import customtkinter
 from tkinter import *
+import customtkinter as ctk
+from functools import partial
 
-# Initialize a window
-root = Tk()
-root.geometry("1360x768")
+# Initialize the CustomTkinter window
+ctk.set_appearance_mode("light")  # Set the appearance mode: "light" or "dark"
+ctk.set_default_color_theme("blue")  # Set the default color theme
 
-# creating a Fra, e which can expand according
-# to the size of the window
-pane = Frame(root)
-pane.pack(fill = BOTH)
 
-# button widgets which can also expand and fill
-# in the parent widget entirely
-# Button 1
-b1 = Button(pane, text = "Click me !", background = "blue")
-b1.pack(fill = BOTH, expand = True)
- 
-root.mainloop()
+
+#class App(ctk.CTk):
+    #def __init__(self):
+        #super().__init__()
+
+        # Configure window
+app = ctk.CTk()
+app.title("CustomTkinter Example with Multiple Checkboxes")
+app.geometry("300x300")
+
+
+
+def on_check(var, checkbox):
+    # Change color when the checkbox is selected
+    if var.get() == 1:
+        checkbox.configure(text_color="red") 
+    elif var.get() == 0:
+        checkbox.configure(text_color="black")  # Reset to default color
+
+def create_box():
+    #checkboxes = {}
+    for i in range(4):  # Example with 5 checkboxes
+        var = ctk.IntVar(value=0)
+        checkbox = ctk.CTkCheckBox(app,
+            text=f"Check me {i+1}",
+            variable=var)
+        checkbox.configure(command=partial(on_check, var, checkbox))
+        checkbox.pack(pady=10)
+        #checkboxes[f"checkbox_{i+1}"] = var
+
+        # Debugging: Print the state of all checkboxes
+
+create_box()
+app.mainloop()
 
