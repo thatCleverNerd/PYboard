@@ -32,6 +32,8 @@ title.grid(row=0, column=0, sticky="nw")
 
 # Left side of the window. Text should end up in here
 whiteboard = customtkinter.CTkFrame(app, width=1000, height=1000, fg_color=offwhite, corner_radius=0)
+whiteboard.grid_rowconfigure((1, 1), weight=1)
+whiteboard.grid_columnconfigure((2, 0), weight=1)
 
 # Stops the window from shrinking after adding a note (widget)
 whiteboard.pack_propagate(False)
@@ -66,12 +68,14 @@ def return_key_event(event):
         font=("Comic Sans", 20),
         variable=note_var)
     new_note.configure(command=partial(on_checkbox_change, note_var, new_note))
-    new_note.pack(side="top", padx=(40, 0), pady=(18, 12), fill="x")
+    new_note.pack(side="top", padx=(40, 0), pady=(30, 10), fill="x", anchor="w")
+
+    ###############################
 
     # Add a remove button for each checkbox
-    remove_button = customtkinter.CTkButton(whiteboard, text="Remove", command=partial(remove_checkbox, new_note))
-    remove_button.pack(side="top", padx=(20, 0), pady=(18, 12))
-    
+    remove_button = customtkinter.CTkButton(whiteboard, fg_color=lightgrey, text="Remove", command=partial(remove_checkbox, new_note))
+    remove_button.pack(side="top", padx=(20, 0), pady=(20, 6), anchor="w")
+
     # Store the checkbox reference
     checkboxes[new_note] = remove_button
  
@@ -112,10 +116,6 @@ entry = customtkinter.CTkEntry(
 
 entry.bind('<Return>', return_key_event)
 entry.grid(row=1, column=1, sticky="n", columnspan="2", pady="150", ipady=20, ipadx="30")
-
-
-
-
 
 
 app.mainloop()
