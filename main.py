@@ -51,9 +51,7 @@ label.grid(row=1, column=1, sticky="n", columnspan="2", pady="150", padx=(0, 340
 
 ################## RETURN KEY EVENT FUCTION ####################################
 
-
-
-
+checkboxes = {}
 
 
 def return_key_event(event):
@@ -62,24 +60,41 @@ def return_key_event(event):
     note_var = BooleanVar()
     user_input = entry.get()
 
-    for i in range(1):
-        new_note = customtkinter.CTkCheckBox(
-            whiteboard,
-            text=user_input,
-            font=("Comic Sans", 20),
-            variable=note_var)
-        new_note.configure(command=partial(on_checkbox_change, note_var, new_note))
-        new_note.pack(side="top", padx=(40, 0), pady=(18, 12), fill="x")
+    new_note = customtkinter.CTkCheckBox(
+        whiteboard,
+        text=user_input,
+        font=("Comic Sans", 20),
+        variable=note_var)
+    new_note.configure(command=partial(on_checkbox_change, note_var, new_note))
+    new_note.pack(side="top", padx=(40, 0), pady=(18, 12), fill="x")
 
+    # Add a remove button for each checkbox
+    remove_button = customtkinter.CTkButton(whiteboard, text="Remove", command=partial(remove_checkbox, new_note))
+    remove_button.pack(side="top", padx=(20, 0), pady=(18, 12))
+    
+    # Store the checkbox reference
+    checkboxes[new_note] = remove_button
+ 
     entry.delete(0, 'end')
 
 
 
 def on_checkbox_change(note_var, new_note):
     if note_var.get() == 1:
-        new_note.configure(text_color="red")
+        crossed_out_font = customtkinter.CTkFont(family="Comic Sans", size=20, overstrike=True)
+        new_note.configure(text_color="red", font=crossed_out_font)
+
     elif note_var.get() == 0:
-        new_note.configure(text_color="black")  # Reset to default color
+        original_font = customtkinter.CTkFont(family="Comic Sans", size=20, overstrike=False)
+        new_note.configure(text_color="black", font=original_font)
+
+
+def remove_checkbox(checkbox):
+    # Remove the checkbox and associated remove button
+    checkbox.pack_forget()
+    if checkbox in checkboxes:
+        checkboxes[checkbox].pack_forget()
+        del checkboxes[checkbox]
 
 
 ########################################
