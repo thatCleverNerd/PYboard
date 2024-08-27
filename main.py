@@ -13,6 +13,7 @@ app.geometry("1360x768")
 app.title("PYboard")
 
 main_font = "Helvetica"
+font2 = "Comfortaa"
 
 app.grid_columnconfigure((0, 1), weight=1)
 app.grid_rowconfigure((1, 1), weight=1)
@@ -65,7 +66,7 @@ def return_key_event(event):
     new_note = customtkinter.CTkCheckBox(
         whiteboard,
         text=user_input,
-        font=("Comic Sans", 20),
+        font=(font2, 20),
         variable=note_var)
     new_note.configure(command=partial(on_checkbox_change, note_var, new_note))
     new_note.pack(side="top", padx=(40, 0), pady=(30, 10), fill="x", anchor="w")
@@ -85,11 +86,11 @@ def return_key_event(event):
 
 def on_checkbox_change(note_var, new_note):
     if note_var.get() == 1:
-        crossed_out_font = customtkinter.CTkFont(family="Comic Sans", size=20, overstrike=True)
+        crossed_out_font = customtkinter.CTkFont(family=font2, size=20, overstrike=True)
         new_note.configure(text_color="red", font=crossed_out_font)
 
     elif note_var.get() == 0:
-        original_font = customtkinter.CTkFont(family="Comic Sans", size=20, overstrike=False)
+        original_font = customtkinter.CTkFont(family=font2, size=20, overstrike=False)
         new_note.configure(text_color="black", font=original_font)
 
 
