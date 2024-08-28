@@ -3,6 +3,11 @@
 import customtkinter
 from tkinter import *
 from functools import partial
+import os
+
+os.system('clear')
+
+#\/\/\/\\/\/\/\\/\/\/\/\/\/\/\\/\/\/\/\/\\/\/
 
 lightgrey = "#d9d9d9"
 offwhite = "#e3e3e3"
@@ -18,13 +23,14 @@ font2 = "Comfortaa"
 app.grid_columnconfigure((0, 1), weight=1)
 app.grid_rowconfigure((1, 1), weight=1)
 
+#\/\/\\/\/\\\\\\\\\\\\\\/\\/\/\\/\/\\\\\\\/\/\\/
+
 
 ############ TOOLBAR ######################
 # My toolbar up at the top
 toolbar = customtkinter.CTkFrame(app, height=200, fg_color=lightgrey, corner_radius=0)
 toolbar.grid(row=0,column=0,sticky="we", columnspan="2")
 
-# PYboard title
 title = Label(toolbar, text="PYboard", padx=30, pady=30, font=(main_font, 16))
 title.grid(row=0, column=0, sticky="nw")
 
@@ -43,7 +49,8 @@ whiteboard.grid(row=1, column=0, sticky="nesw")
 
 ###################### RIGHT FRAME #####################################
 # Right side of the window. User can Input text over here 
-rightFrame = customtkinter.CTkFrame(app, width=800, fg_color=lightgrey, corner_radius=0)
+rightFrame = customtkinter.CTkFrame(app, width=700, fg_color=lightgrey, corner_radius=0)
+rightFrame.pack_propagate(False)
 rightFrame.grid(row=1, column=1, sticky="nesw")
 
 # 'Add note' label before entry field
@@ -51,15 +58,14 @@ label = Label(app, text="Add note:", font=(main_font, 16))
 label.grid(row=1, column=1, sticky="n", columnspan="2", pady="150", padx=(0, 340))
 
 
+################## RETURN KEY EVENT ####################################
 
-################## RETURN KEY EVENT FUCTION ####################################
+
 
 checkboxes = {}
 
-
 def return_key_event(event):
     # Clears text when this function is called
-
     note_var = BooleanVar()
     user_input = entry.get()
 
@@ -71,11 +77,18 @@ def return_key_event(event):
     new_note.configure(command=partial(on_checkbox_change, note_var, new_note))
     new_note.pack(side="top", padx=(40, 0), pady=(30, 10), fill="x", anchor="w")
 
-    ###############################
 
+
+    ############# 'REMOVE' BUTTON ##################
     # Add a remove button for each checkbox
-    remove_button = customtkinter.CTkButton(whiteboard, fg_color=lightgrey, text="Remove", command=partial(remove_checkbox, new_note))
-    remove_button.pack(side="top", padx=(20, 0), pady=(20, 6), anchor="w")
+    remove_button = customtkinter.CTkButton(whiteboard,
+        hover_color="red",
+        fg_color=lightgrey,
+        text="Remove",
+        command=partial(remove_checkbox, new_note))
+
+    remove_button.pack(side="top", padx=(30, 710), pady=(20, 6), anchor="w")
+
 
     # Store the checkbox reference
     checkboxes[new_note] = remove_button
@@ -101,11 +114,13 @@ def remove_checkbox(checkbox):
         checkboxes[checkbox].pack_forget()
         del checkboxes[checkbox]
 
+def clear_all_checkboxes():
+    # Clear all checkboxes and their remove buttons
+    for checkbox in list(checkboxes.keys()):
+        remove_checkbox(checkbox)
+
 
 ########################################
-
-
-
 
 # Entry for user input
 entry = customtkinter.CTkEntry(
@@ -117,6 +132,16 @@ entry = customtkinter.CTkEntry(
 
 entry.bind('<Return>', return_key_event)
 entry.grid(row=1, column=1, sticky="n", columnspan="2", pady="150", ipady=20, ipadx="30")
+
+
+clear_button = customtkinter.CTkButton(rightFrame,
+        hover_color="red",
+        fg_color="black",
+        text="Clear",
+        command=clear_all_checkboxes)
+
+clear_button.pack(side="bottom", padx=(30, 30), pady=(20, 390), anchor="n")
+
 
 
 app.mainloop()
