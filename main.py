@@ -17,21 +17,30 @@ app = customtkinter.CTk()
 app.geometry("1360x768")
 app.title("PYboard")
 
-main_font = "Helvetica"
-font2 = "Comfortaa"
-
 app.grid_columnconfigure((0, 1), weight=1)
 app.grid_rowconfigure((1, 1), weight=1)
 
+main_font = "Helvetica"
+font2 = "Saturday Sweat"
+title_font = "Pinky Blues"
+note_size = 45
+
+file_path = os.path.expanduser("~/todo.txt")
+
 #\/\/\\/\/\\\\\\\\\\\\\\/\\/\/\\/\/\\\\\\\/\/\\/
 
+if os.path.exists(file_path):
+    pass
+else:
+    with open(file_path, "a"):
+        pass
 
 ############ TOOLBAR ######################
 # My toolbar up at the top
 toolbar = customtkinter.CTkFrame(app, height=200, fg_color=lightgrey, corner_radius=0)
 toolbar.grid(row=0,column=0,sticky="we", columnspan="2")
 
-title = Label(toolbar, text="PYboard", padx=30, pady=30, font=(main_font, 16))
+title = Label(toolbar, text="PYboard", padx=30, pady=30, font=(title_font, 20))
 title.grid(row=0, column=0, sticky="nw")
 
 
@@ -72,7 +81,7 @@ def return_key_event(event):
     new_note = customtkinter.CTkCheckBox(
         whiteboard,
         text=user_input,
-        font=(font2, 20),
+        font=(font2, note_size),
         variable=note_var)
     new_note.configure(command=partial(on_checkbox_change, note_var, new_note))
     new_note.pack(side="top", padx=(40, 0), pady=(30, 10), fill="x", anchor="w")
@@ -99,11 +108,11 @@ def return_key_event(event):
 
 def on_checkbox_change(note_var, new_note):
     if note_var.get() == 1:
-        crossed_out_font = customtkinter.CTkFont(family=font2, size=20, overstrike=True)
+        crossed_out_font = customtkinter.CTkFont(family=font2, size=note_size, overstrike=True)
         new_note.configure(text_color="red", font=crossed_out_font)
 
     elif note_var.get() == 0:
-        original_font = customtkinter.CTkFont(family=font2, size=20, overstrike=False)
+        original_font = customtkinter.CTkFont(family=font2, size=note_size, overstrike=False)
         new_note.configure(text_color="black", font=original_font)
 
 
