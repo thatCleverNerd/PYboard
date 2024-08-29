@@ -32,8 +32,9 @@ file_path = os.path.expanduser("~/todo.txt")
 if os.path.exists(file_path):
     pass
 else:
-    with open(file_path, "a"):
+    with open(file_path, "w"):
         pass
+
 
 ############ TOOLBAR ######################
 # My toolbar up at the top
@@ -67,17 +68,22 @@ label = Label(app, text="Add note:", font=(main_font, 16))
 label.grid(row=1, column=1, sticky="n", columnspan="2", pady="150", padx=(0, 340))
 
 
-################## RETURN KEY EVENT ####################################
-
-
+##################### CREATE NOTE ##############################
 
 checkboxes = {}
 
-def return_key_event(event):
+def create_note(user_input):
+
+    if not user_input.strip():
+        return  # Skip if input is empty
+
+    # Prevent duplicate notes
+    existing_notes = [checkbox.cget("text") for checkbox in checkboxes.keys()]
+    if user_input in existing_notes:
+        return
+
     # Clears text when this function is called
     note_var = BooleanVar()
-    user_input = entry.get()
-
     new_note = customtkinter.CTkCheckBox(
         whiteboard,
         text=user_input,
@@ -85,6 +91,9 @@ def return_key_event(event):
         variable=note_var)
     new_note.configure(command=partial(on_checkbox_change, note_var, new_note))
     new_note.pack(side="top", padx=(40, 0), pady=(30, 10), fill="x", anchor="w")
+
+    with open(file_path, 'a') as file:
+        file.write(user_input + '\n')
 
 
 
@@ -101,7 +110,13 @@ def return_key_event(event):
 
     # Store the checkbox reference
     checkboxes[new_note] = remove_button
- 
+
+################## RETURN KEY EVENT ####################################
+
+def return_key_event(event):
+    user_input = entry.get()
+    if user_input.strip():
+        create_note(user_input)  
     entry.delete(0, 'end')
 
 
@@ -128,8 +143,7 @@ def clear_all_checkboxes():
     for checkbox in list(checkboxes.keys()):
         remove_checkbox(checkbox)
 
-
-########################################
+################## USER INPUT ######################
 
 # Entry for user input
 entry = customtkinter.CTkEntry(
@@ -142,7 +156,16 @@ entry = customtkinter.CTkEntry(
 entry.bind('<Return>', return_key_event)
 entry.grid(row=1, column=1, sticky="n", columnspan="2", pady="150", ipady=20, ipadx="30")
 
+if os.path.exists(file_path):
+    with open(file_path, 'r') as file:
+        for line in file:
+            user_input = line.strip()
+            if user_input:
+                create_note(user_input) 
 
+
+
+#################### CLEARS ALL TEXT ##################################
 clear_button = customtkinter.CTkButton(rightFrame,
         hover_color="red",
         fg_color="black",
