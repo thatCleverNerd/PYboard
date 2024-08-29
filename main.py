@@ -7,6 +7,7 @@ import os
 
 os.system('clear')
 
+
 #\/\/\/\\/\/\/\\/\/\/\/\/\/\/\\/\/\/\/\/\\/\/
 
 lightgrey = "#d9d9d9"
@@ -73,14 +74,13 @@ label.grid(row=1, column=1, sticky="n", columnspan="2", pady="150", padx=(0, 340
 checkboxes = {}
 
 def create_note(user_input):
-
     if not user_input.strip():
         return  # Skip if input is empty
 
     # Prevent duplicate notes
-    existing_notes = [checkbox.cget("text") for checkbox in checkboxes.keys()]
+    existing_notes = {checkbox.cget("text") for checkbox in checkboxes.keys()}
     if user_input in existing_notes:
-        return
+        return  # Skip if note already exists
 
     # Clears text when this function is called
     note_var = BooleanVar()
@@ -92,9 +92,9 @@ def create_note(user_input):
     new_note.configure(command=partial(on_checkbox_change, note_var, new_note))
     new_note.pack(side="top", padx=(40, 0), pady=(30, 10), fill="x", anchor="w")
 
+
     with open(file_path, 'a') as file:
         file.write(user_input + '\n')
-
 
 
     ############# 'REMOVE' BUTTON ##################
@@ -138,10 +138,24 @@ def remove_checkbox(checkbox):
         checkboxes[checkbox].pack_forget()
         del checkboxes[checkbox]
 
+    # Remove the note from the file
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+    with open(file_path, 'w') as file:
+        for line in lines:
+            if line.strip() != checkbox.cget("text"):
+                file.write(line)
+
+
 def clear_all_checkboxes():
     # Clear all checkboxes and their remove buttons
     for checkbox in list(checkboxes.keys()):
         remove_checkbox(checkbox)
+
+    # Clear the file
+    with open(file_path, 'w') as file:
+        pass  # Simply opening the file in write mode clears its content
+
 
 ################## USER INPUT ######################
 
@@ -164,7 +178,6 @@ if os.path.exists(file_path):
                 create_note(user_input) 
 
 
-
 #################### CLEARS ALL TEXT ##################################
 clear_button = customtkinter.CTkButton(rightFrame,
         hover_color="red",
@@ -174,6 +187,16 @@ clear_button = customtkinter.CTkButton(rightFrame,
 
 clear_button.pack(side="bottom", padx=(30, 30), pady=(20, 390), anchor="n")
 
+##############################################
+def load_notes():
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as file:
+            existing_notes = {line.strip() for line in file if line.strip()}
+            for note in existing_notes:
+                if note not in {checkbox.cget("text") for checkbox in checkboxes.keys()}:
+                    create_note(note)  # Create a new note if it doesn't already exist
 
+# Call this function to load notes when the app starts
+load_notes()
 
 app.mainloop()
