@@ -73,15 +73,28 @@ label.grid(row=1, column=1, sticky="n", columnspan="2", pady="150", padx=(0, 340
 
 checkboxes = {}
 
-def create_note(user_input):
+def create_note(user_input, from_load=False):
     if not user_input.strip():
         return  # Skip if input is empty
 
-    # Prevent duplicate notes
+
+    # Check if note already exists in the UI
     existing_notes = {checkbox.cget("text") for checkbox in checkboxes.keys()}
     if user_input in existing_notes:
-        return  # Skip if note already exists
+        return  # Skip if note already exists in the UI
 
+    if not from_load:
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
+        if user_input + '\n' in lines:
+            return  # Skip if note already exists in the file
+
+    if not from_load:
+        with open(file_path, 'a') as file:
+            file.write(user_input + '\n')
+
+
+   
     # Clears text when this function is called
     note_var = BooleanVar()
     new_note = customtkinter.CTkCheckBox(
@@ -90,11 +103,7 @@ def create_note(user_input):
         font=(font2, note_size),
         variable=note_var)
     new_note.configure(command=partial(on_checkbox_change, note_var, new_note))
-    new_note.pack(side="top", padx=(40, 0), pady=(30, 10), fill="x", anchor="w")
-
-
-    with open(file_path, 'a') as file:
-        file.write(user_input + '\n')
+    new_note.pack(side="top", padx=(40, 0), pady=(30, 10), fill="x", anchor="w") 
 
 
     ############# 'REMOVE' BUTTON ##################
@@ -193,8 +202,9 @@ def load_notes():
         with open(file_path, 'r') as file:
             existing_notes = {line.strip() for line in file if line.strip()}
             for note in existing_notes:
+                # Check if note already exists in the UI
                 if note not in {checkbox.cget("text") for checkbox in checkboxes.keys()}:
-                    create_note(note)  # Create a new note if it doesn't already exist
+                    create_note(note, from_load=True)  # Correct the variable to `note`
 
 # Call this function to load notes when the app starts
 load_notes()
