@@ -26,7 +26,7 @@ font2 = "Saturday Sweat"
 title_font = "Pinky Blues"
 note_size = 45
 
-file_path = os.path.expanduser("~/todo.txt")
+file_path = ("assets/todo.txt")
 
 #\/\/\\/\/\\\\\\\\\\\\\\/\\/\/\\/\/\\\\\\\/\/\\/
 
