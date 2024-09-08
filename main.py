@@ -1,4 +1,4 @@
-#!/home/killian/PYTHON/venv/bin/python3
+#!/bin/python3
 
 import customtkinter
 from tkinter import *
