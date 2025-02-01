@@ -4,12 +4,23 @@ import customtkinter
 from tkinter import *
 from functools import partial
 import os
+import sys
 
 os.system('clear')
 
-# Ensure paths are absolute
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-file_path = os.path.join(BASE_DIR, "assets", "todo.txt")
+if hasattr(sys, 'frozen'):
+    # The app is running from a packaged binary (PyInstaller)
+    user_config_dir = os.path.join(os.path.expanduser("~"), ".config", "pyboard")
+    os.makedirs(user_config_dir, exist_ok=True)
+    file_path = os.path.join(user_config_dir, "todo.txt")
+else:
+    # The app is running in development mode (directly from the script)
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(BASE_DIR, "assets", "todo.txt")
+
+print(f"Resolved file path: {file_path}")  # Debugging line
+
+#===============================
 
 lightgrey = "#d9d9d9"
 offwhite = "#e3e3e3"
