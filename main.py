@@ -69,7 +69,7 @@ label.grid(row=1, column=1, sticky="n", columnspan="2", pady="150", padx=(0, 340
 
 checkboxes = {}
 
-def create_note(user_input, from_load=False):
+def create_note(user_input, from_load=False, is_checked=False):
     if not user_input.strip():
         return
     existing_notes = {checkbox.cget("text") for checkbox in checkboxes.keys()}
@@ -81,9 +81,9 @@ def create_note(user_input, from_load=False):
                 return
     if not from_load:
         with open(file_path, 'a') as file:
-            file.write(user_input + '\n')
+            file.write(f"{user_input}:{is_checked}\n")
 
-    note_var = BooleanVar()
+    note_var = BooleanVar(value=is_checked)
     new_note = customtkinter.CTkCheckBox(
         whiteboard, text=user_input, font=(font2, note_size), variable=note_var)
     new_note.configure(command=partial(on_checkbox_change, note_var, new_note))
@@ -95,6 +95,10 @@ def create_note(user_input, from_load=False):
 
     checkboxes[new_note] = remove_button
 
+    # Apply text styling if the checkbox is checked
+    if is_checked:
+        on_checkbox_change(note_var, new_note)
+
 def return_key_event(event):
     user_input = entry.get()
     if user_input.strip():
@@ -104,6 +108,19 @@ def return_key_event(event):
 def on_checkbox_change(note_var, new_note):
     new_note.configure(text_color="red" if note_var.get() else "black",
                         font=customtkinter.CTkFont(family=font2, size=note_size, overstrike=note_var.get()))
+    # Update the state in the file
+    update_checkbox_state(new_note, note_var.get())
+
+def update_checkbox_state(checkbox, is_checked):
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+    with open(file_path, 'w') as file:
+        for line in lines:
+            note_text, _ = line.strip().rsplit(":", 1)
+            if note_text == checkbox.cget("text"):
+                file.write(f"{note_text}:{is_checked}\n")
+            else:
+                file.write(line)
 
 def remove_checkbox(checkbox):
     checkbox.pack_forget()
@@ -114,7 +131,8 @@ def remove_checkbox(checkbox):
         lines = file.readlines()
     with open(file_path, 'w') as file:
         for line in lines:
-            if line.strip() != checkbox.cget("text"):
+            note_text, _ = line.strip().rsplit(":", 1)
+            if note_text != checkbox.cget("text"):
                 file.write(line)
 
 def clear_all_checkboxes():
@@ -131,20 +149,12 @@ entry.grid(row=1, column=1, sticky="n", columnspan="2", pady="150", ipady=20, ip
 if os.path.exists(file_path):
     with open(file_path, 'r') as file:
         for line in file:
-            create_note(line.strip())
+            note_text, is_checked = line.strip().rsplit(":", 1)
+            create_note(note_text, from_load=True, is_checked=(is_checked == "True"))
 
 clear_button = customtkinter.CTkButton(rightFrame, hover_color="red", fg_color="black", text="Clear",
                                        command=clear_all_checkboxes)
 clear_button.pack(side="bottom", padx=(30, 30), pady=(20, 390), anchor="n")
 
-def load_notes():
-    if os.path.exists(file_path):
-        with open(file_path, 'r') as file:
-            existing_notes = {line.strip() for line in file if line.strip()}
-            for note in existing_notes:
-                if note not in {checkbox.cget("text") for checkbox in checkboxes.keys()}:
-                    create_note(note, from_load=True)
-
-load_notes()
 app.mainloop()
 
