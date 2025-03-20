@@ -4,23 +4,11 @@ import customtkinter
 from tkinter import *
 from functools import partial
 import os
-import sys
 
 os.system('clear')
 
-if hasattr(sys, 'frozen'):
-    # The app is running from a packaged binary (PyInstaller)
-    user_config_dir = os.path.join(os.path.expanduser("~"), ".config", "pyboard")
-    os.makedirs(user_config_dir, exist_ok=True)
-    file_path = os.path.join(user_config_dir, "todo.txt")
-else:
-    # The app is running in development mode (directly from the script)
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(BASE_DIR, "assets", "todo.txt")
 
-print(f"Resolved file path: {file_path}")  # Debugging line
-
-#===============================
+#\/\/\/\\/\/\/\\/\/\/\/\/\/\/\\/\/\/\/\/\\/\/
 
 lightgrey = "#d9d9d9"
 offwhite = "#e3e3e3"
@@ -33,128 +21,192 @@ app.title("PYboard")
 app.grid_columnconfigure((0, 1), weight=1)
 app.grid_rowconfigure((1, 1), weight=1)
 
-# Ensure fonts are available, fallback to system default
 main_font = "Helvetica"
 font2 = "Saturday Sweat"
 title_font = "Pinky Blues"
 note_size = 45
 
-# Ensure the todo file exists
-os.makedirs(os.path.dirname(file_path), exist_ok=True)
-if not os.path.exists(file_path):
+file_path = ("assets/todo.txt")
+
+#\/\/\\/\/\\\\\\\\\\\\\\/\\/\/\\/\/\\\\\\\/\/\\/
+
+if os.path.exists(file_path):
+    pass
+else:
     with open(file_path, "w"):
         pass
 
+
 ############ TOOLBAR ######################
+# My toolbar up at the top
 toolbar = customtkinter.CTkFrame(app, height=200, fg_color=lightgrey, corner_radius=0)
 toolbar.grid(row=0,column=0,sticky="we", columnspan="2")
 
 title = Label(toolbar, text="PYboard", padx=30, pady=30, font=(title_font, 20))
 title.grid(row=0, column=0, sticky="nw")
 
+
 ####################### LEFT FRAME #####################################
+
+# Left side of the window. Text should end up in here
 whiteboard = customtkinter.CTkFrame(app, width=1000, height=1000, fg_color=offwhite, corner_radius=0)
 whiteboard.grid_rowconfigure((1, 1), weight=1)
 whiteboard.grid_columnconfigure((2, 0), weight=1)
+
+# Stops the window from shrinking after adding a note (widget)
 whiteboard.pack_propagate(False)
 whiteboard.grid(row=1, column=0, sticky="nesw")
 
+
 ###################### RIGHT FRAME #####################################
+# Right side of the window. User can Input text over here 
 rightFrame = customtkinter.CTkFrame(app, width=700, fg_color=lightgrey, corner_radius=0)
 rightFrame.pack_propagate(False)
 rightFrame.grid(row=1, column=1, sticky="nesw")
 
+# 'Add note' label before entry field
 label = Label(app, text="Add note:", font=(main_font, 16))
 label.grid(row=1, column=1, sticky="n", columnspan="2", pady="150", padx=(0, 340))
 
+
+##################### CREATE NOTE ##############################
+
 checkboxes = {}
 
-def create_note(user_input, from_load=False, is_checked=False):
+def create_note(user_input, from_load=False):
     if not user_input.strip():
-        return
+        return  # Skip if input is empty
+
+
+    # Check if note already exists in the UI
     existing_notes = {checkbox.cget("text") for checkbox in checkboxes.keys()}
     if user_input in existing_notes:
-        return
+        return  # Skip if note already exists in the UI
+
     if not from_load:
         with open(file_path, 'r') as file:
-            if user_input + '\n' in file.readlines():
-                return
+            lines = file.readlines()
+        if user_input + '\n' in lines:
+            return  # Skip if note already exists in the file
+
     if not from_load:
         with open(file_path, 'a') as file:
-            file.write(f"{user_input}:{is_checked}\n")
+            file.write(user_input + '\n')
 
-    note_var = BooleanVar(value=is_checked)
+
+   
+    # Clears text when this function is called
+    note_var = BooleanVar()
     new_note = customtkinter.CTkCheckBox(
-        whiteboard, text=user_input, font=(font2, note_size), variable=note_var)
+        whiteboard,
+        text=user_input,
+        font=(font2, note_size),
+        variable=note_var)
     new_note.configure(command=partial(on_checkbox_change, note_var, new_note))
-    new_note.pack(side="top", padx=(40, 0), pady=(30, 10), fill="x", anchor="w")
+    new_note.pack(side="top", padx=(40, 0), pady=(30, 10), fill="x", anchor="w") 
 
-    remove_button = customtkinter.CTkButton(whiteboard, hover_color="red", fg_color=lightgrey,
-                                            text="Remove", command=partial(remove_checkbox, new_note))
+
+    ############# 'REMOVE' BUTTON ##################
+    # Add a remove button for each checkbox
+    remove_button = customtkinter.CTkButton(whiteboard,
+        hover_color="red",
+        fg_color=lightgrey,
+        text="Remove",
+        command=partial(remove_checkbox, new_note))
+
     remove_button.pack(side="top", padx=(30, 710), pady=(20, 6), anchor="w")
 
+
+    # Store the checkbox reference
     checkboxes[new_note] = remove_button
 
-    # Apply text styling if the checkbox is checked
-    if is_checked:
-        on_checkbox_change(note_var, new_note)
+################## RETURN KEY EVENT ####################################
 
 def return_key_event(event):
     user_input = entry.get()
     if user_input.strip():
-        create_note(user_input)
+        create_note(user_input)  
     entry.delete(0, 'end')
 
-def on_checkbox_change(note_var, new_note):
-    new_note.configure(text_color="red" if note_var.get() else "black",
-                        font=customtkinter.CTkFont(family=font2, size=note_size, overstrike=note_var.get()))
-    # Update the state in the file
-    update_checkbox_state(new_note, note_var.get())
 
-def update_checkbox_state(checkbox, is_checked):
-    with open(file_path, 'r') as file:
-        lines = file.readlines()
-    with open(file_path, 'w') as file:
-        for line in lines:
-            note_text, _ = line.strip().rsplit(":", 1)
-            if note_text == checkbox.cget("text"):
-                file.write(f"{note_text}:{is_checked}\n")
-            else:
-                file.write(line)
+
+def on_checkbox_change(note_var, new_note):
+    if note_var.get() == 1:
+        crossed_out_font = customtkinter.CTkFont(family=font2, size=note_size, overstrike=True)
+        new_note.configure(text_color="red", font=crossed_out_font)
+
+    elif note_var.get() == 0:
+        original_font = customtkinter.CTkFont(family=font2, size=note_size, overstrike=False)
+        new_note.configure(text_color="black", font=original_font)
+
 
 def remove_checkbox(checkbox):
+    # Remove the checkbox and associated remove button
     checkbox.pack_forget()
     if checkbox in checkboxes:
         checkboxes[checkbox].pack_forget()
         del checkboxes[checkbox]
+
+    # Remove the note from the file
     with open(file_path, 'r') as file:
         lines = file.readlines()
     with open(file_path, 'w') as file:
         for line in lines:
-            note_text, _ = line.strip().rsplit(":", 1)
-            if note_text != checkbox.cget("text"):
+            if line.strip() != checkbox.cget("text"):
                 file.write(line)
 
+
 def clear_all_checkboxes():
+    # Clear all checkboxes and their remove buttons
     for checkbox in list(checkboxes.keys()):
         remove_checkbox(checkbox)
-    with open(file_path, 'w') as file:
-        pass
 
-entry = customtkinter.CTkEntry(app, fg_color="white", corner_radius=0, placeholder_text="type here...",
-                               font=(main_font, 18))
+    # Clear the file
+    with open(file_path, 'w') as file:
+        pass  # Simply opening the file in write mode clears its content
+
+
+################## USER INPUT ######################
+
+# Entry for user input
+entry = customtkinter.CTkEntry(
+    app, 
+    fg_color="white", 
+    corner_radius=0, 
+    placeholder_text="type here...",
+    font=(main_font, 18))
+
 entry.bind('<Return>', return_key_event)
 entry.grid(row=1, column=1, sticky="n", columnspan="2", pady="150", ipady=20, ipadx="30")
 
 if os.path.exists(file_path):
     with open(file_path, 'r') as file:
         for line in file:
-            note_text, is_checked = line.strip().rsplit(":", 1)
-            create_note(note_text, from_load=True, is_checked=(is_checked == "True"))
+            user_input = line.strip()
+            if user_input:
+                create_note(user_input) 
 
-clear_button = customtkinter.CTkButton(rightFrame, hover_color="red", fg_color="black", text="Clear",
-                                       command=clear_all_checkboxes)
+
+#################### CLEARS ALL TEXT ##################################
+clear_button = customtkinter.CTkButton(rightFrame,
+        hover_color="red",
+        fg_color="black",
+        text="Clear",
+        command=clear_all_checkboxes)
+
 clear_button.pack(side="bottom", padx=(30, 30), pady=(20, 390), anchor="n")
 
-app.mainloop()
+##############################################
+def load_notes():
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as file:
+            existing_notes = {line.strip() for line in file if line.strip()}
+            for note in existing_notes:
+                # Check if note already exists in the UI
+                if note not in {checkbox.cget("text") for checkbox in checkboxes.keys()}:
+                    create_note(note, from_load=True)  # Correct the variable to `note`
 
+# Call this function to load notes when the app starts
+load_notes()
+
+app.mainloop()
