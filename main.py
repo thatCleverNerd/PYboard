@@ -4,6 +4,7 @@ import customtkinter
 from tkinter import *
 from functools import partial
 import os
+from PIL import Image, ImageTk
 
 os.system('clear')
 
@@ -17,6 +18,13 @@ customtkinter.set_appearance_mode("light")
 app = customtkinter.CTk()
 app.geometry("1360x768")
 app.title("PYboard")
+
+#========================
+icon_path = "assets/notes.png"
+icon = Image.open(icon_path)
+photo = ImageTk.PhotoImage(icon)
+app.wm_iconphoto(True, photo)
+#========================
 
 app.grid_columnconfigure((0, 1), weight=1)
 app.grid_rowconfigure((1, 1), weight=1)
