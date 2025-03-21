@@ -20,10 +20,17 @@ app.geometry("1360x768")
 app.title("PYboard")
 
 #========================
-icon_path = "assets/notes.png"
-icon = Image.open(icon_path)
-photo = ImageTk.PhotoImage(icon)
-app.wm_iconphoto(True, photo)
+icon_path = "assets/notes.ico"
+
+# Open the icon using Pillow
+image = Image.open(icon_path)
+
+# Convert the image for Tkinter
+icon = ImageTk.PhotoImage(image)
+
+# Set the icon for the window
+app.wm_iconphoto(True, icon)
+
 #========================
 
 app.grid_columnconfigure((0, 1), weight=1)
